@@ -6,6 +6,12 @@
 #include "cpu.h"
 #include "list.h"
 
+
+struct task_node {
+    Task *task;
+    int remaining_bursts;
+    struct task_node *next;
+};
 // Ready queue for round-robin scheduling.
 // head points to the next task to run, and tail points to the last task in the queue.
 struct task_node* head = NULL;
@@ -23,20 +29,44 @@ static void free_task_node(struct task_node* node) {
 
 static void enqueue(struct task_node *node)
 {
-  if (node == NULL)
-    return;
+    if (node == NULL)
+        return;
 
-  node->next = NULL;
+    node->next = NULL;
 
-  // If the queue is empty we set the node as its head.
-  if (head == NULL) {
-    head = node;
-    tail = node;
-    return;
-  }
+    // Empty queue
+    if (head == NULL) {
+        head = node;
+        tail = node;
+        return;
+    }
 
-  tail->next = node;
-  tail = node;
+    // New node has higher priority than the head.
+    if (node->task->priority > head->task->priority) {
+        node->next = head;
+        head = node;
+        return;
+    }
+
+    struct task_node *cur = head;
+
+    // Find the position where the new node should go.
+    //
+    // We move past tasks with priority >= node's priority.
+    // This is important because tasks with the same priority
+    // remain in FIFO order for round-robin.
+    while (cur->next != NULL &&
+           cur->next->task->priority >= node->task->priority) {
+        cur = cur->next;
+    }
+
+    node->next = cur->next;
+    cur->next = node;
+
+    // If inserted at the end, update tail.
+    if (node->next == NULL) {
+        tail = node;
+    }
 }
 
 static struct task_node *dequeue()
