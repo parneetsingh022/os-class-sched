@@ -66,6 +66,13 @@ void add(char *name, int priority, int burst)
       return;
     }
 
+    
+    // Insert before head if this task has the highest priority.
+    if (node->task->priority > head->task->priority) {
+        node->next = head;
+        head = node;
+        return;
+    }
     struct task_node *cur = head;
 
     while(cur) {
