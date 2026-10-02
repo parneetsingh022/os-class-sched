@@ -4,13 +4,12 @@
 
 #include "task.h"
 
-struct task_node {
+struct node {
     Task *task;
-    int remaining_bursts;
-    struct task_node *next;
+    struct node *next;
 };
 
 // insert and delete operations.
-void insert(struct task_node **head, Task *task);
-void delete(struct task_node **head, Task *task);
-void traverse(struct task_node *head);
+void insert(struct node **head, Task *task);
+void delete(struct node **head, Task *task);
+void traverse(struct node *head);

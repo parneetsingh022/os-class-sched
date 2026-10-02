@@ -11,9 +11,9 @@
 
 
 // add a new task to the list of tasks
-void insert(struct task_node **head, Task *newTask) {
+void insert(struct node **head, Task *newTask) {
     // add the new task to the list 
-    struct task_node *newNode = malloc(sizeof(struct node));
+    struct node *newNode = malloc(sizeof(struct node));
 
     newNode->task = newTask;
     newNode->next = *head;
@@ -21,9 +21,9 @@ void insert(struct task_node **head, Task *newTask) {
 }
 
 // delete the selected task from the list
-void delete(struct task_node **head, Task *task) {
-    struct task_node *temp;
-    struct task_node *prev;
+void delete(struct node **head, Task *task) {
+    struct node *temp;
+    struct node *prev;
 
     temp = *head;
     // special case - beginning of list
@@ -44,8 +44,8 @@ void delete(struct task_node **head, Task *task) {
 }
 
 // traverse the list
-void traverse(struct task_node *head) {
-    struct task_node *temp;
+void traverse(struct node *head) {
+    struct node *temp;
     temp = head;
 
     while (temp != NULL) {
