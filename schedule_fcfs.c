@@ -14,6 +14,8 @@ struct task_node {
 };
 
 static void free_task_node(struct task_node* node) {
+  // Free the memory used by one queued task entry.
+  // This includes the task metadata, the task name string, and the list node itself.
   if (node == NULL)
     return;
   
@@ -22,6 +24,8 @@ static void free_task_node(struct task_node* node) {
   free(node);
 }
 
+// Queue pointers for the FIFO ready list.
+// head points to the first task to run, and tail points to the most recently added task.
 struct task_node* head = NULL;
 struct task_node* tail = NULL;
 
@@ -39,22 +43,21 @@ void add(char *name, int priority, int burst)
     if (node->task->name == NULL)
         goto memory_alloc_name_error;
 
+    // Store task details and initialize the list link.
     node->task->priority = priority;
     node->task->burst = burst;
     node->next = NULL;
 
     // If this is the first task added to the list, both head and tail will be NULL.
-    //
-    // We only need to check if head is NULL because tail is guaranteed to be NULL
-    // when the list is empty.
+    // We only need to check head because tail is guaranteed to be NULL when the queue is empty.
     if (head == NULL) {
-      /// This is our firt task set tid to 0.
       node->task->tid = 0;
       head = node;
       tail = node;  
       return;
     }
 
+    // Assign the next sequential task ID and append to the end of the ready queue.
     node->task->tid = tail->task->tid + 1;
     tail->next = node;
     tail = node;
@@ -74,16 +77,17 @@ memory_alloc_node_error:
 
 void schedule()
 {
-
+  // FCFS (first-come, first-served) scheduling: repeatedly run the task at the front
+  // of the queue until it has been completely processed, then remove it and continue.
   while (head != NULL) {
+    // Run the task currently at the front of the queue for its full burst time.
     run(head->task, head->task->burst);        
+
+    // Save the current node so we can remove it safely after advancing the queue.
     struct task_node* temp = head;
     head = head->next;
-
     free_task_node(temp);
   }
-
   tail = NULL;
-  
   return;
 }

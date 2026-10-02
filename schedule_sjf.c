@@ -7,14 +7,14 @@
 #include "task.h"
 #include "cpu.h"
 
-// `task_node` is a linked list used to store tasks where are scheduled
-// to run by the scheduler.
+// Linked list for the ready queue; tasks are kept in shortest-burst order.
 struct task_node {
   Task* task;
   struct task_node* next;
 };
 
 static void free_task_node(struct task_node* node) {
+  // Free one finished task's memory.
   if (node == NULL)
     return;
   
@@ -29,7 +29,7 @@ int tid_count = 0;
 
 static void insert_sorted_task(struct task_node* node)
 {
-  // if this is the first item we are adding.
+  // Empty queue: this task becomes the first one.
   if (head == NULL) {
     head = node;
     tail = node;
@@ -37,7 +37,7 @@ static void insert_sorted_task(struct task_node* node)
     return;
   }
 
-  // if new task takes less time then head
+  // Put the new task at the front if it has the shortest burst.
   if(head->task->burst > node->task->burst) {
     node->next = head;
     head = node;
@@ -46,11 +46,12 @@ static void insert_sorted_task(struct task_node* node)
 
   struct task_node* cur = head;
 
+  // Walk until we find the correct insertion point by burst length.
   while (cur->next && cur->next->task->burst <= node->task->burst){
     cur = cur->next;
   }
 
-  // if this is the last task update the tail.
+  // If it belongs at the end, update the tail pointer.
   if (cur == tail) {
     tail = node;
   }
@@ -61,6 +62,7 @@ static void insert_sorted_task(struct task_node* node)
 
 void add(char *name, int priority, int burst)
 {
+    // Create and initialize the new task node.
     struct task_node *node = malloc(sizeof *node);
     if (node == NULL)
         goto memory_alloc_node_error;
@@ -84,12 +86,16 @@ void add(char *name, int priority, int burst)
 
     return;
 
+// Cleanup labels for failed memory allocations.
+// If name allocation fails, free the task object first.
 memory_alloc_name_error:
     free(node->task);
 
+// If the task allocation fails, free the list node only.
 memory_alloc_task_error:
     free(node);
 
+// If the node allocation fails, print an error and exit.
 memory_alloc_node_error:
     fprintf(stderr, "failed to allocate memory!\n");
     exit(1);
@@ -97,7 +103,7 @@ memory_alloc_node_error:
 
 void schedule()
 {
-
+  // SJF runs the shortest burst first, then removes it and continues.
   while (head != NULL) {
     run(head->task, head->task->burst);        
     struct task_node* temp = head;
