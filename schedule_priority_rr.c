@@ -7,11 +7,14 @@
 #include "list.h"
 
 
+// Each node stores a task, the amount of burst time still remaining,
+// and a pointer to the next task in the ready queue.
 struct task_node {
     Task *task;
     int remaining_bursts;
     struct task_node *next;
 };
+
 // Ready queue for round-robin scheduling.
 // head points to the next task to run, and tail points to the last task in the queue.
 struct task_node* head = NULL;
@@ -27,11 +30,19 @@ static void free_task_node(struct task_node* node) {
   free(node);
 }
 
+
+// The ready queue is maintained in descending priority order.
+// A larger priority value means a higher priority.
+// Tasks with the same priority remain in FIFO order so that
+// round-robin scheduling is preserved among equal-priority tasks.
 static void enqueue(struct task_node *node)
 {
     if (node == NULL)
         return;
 
+
+    // The node is being inserted into the queue, so clear its old
+    // next pointer before determining its new position.
     node->next = NULL;
 
     // Empty queue
