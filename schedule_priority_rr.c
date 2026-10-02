@@ -6,12 +6,6 @@
 #include "cpu.h"
 #include "list.h"
 
-
-struct task_node {
-    Task *task;
-    int remaining_bursts;
-    struct task_node *next;
-};
 // Ready queue for round-robin scheduling.
 // head points to the next task to run, and tail points to the last task in the queue.
 struct task_node* head = NULL;
